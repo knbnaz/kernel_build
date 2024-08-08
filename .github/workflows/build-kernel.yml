@@ -40,10 +40,6 @@ jobs:
           mkdir clang && wget https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/clang+llvm-18.1.8-x86_64-linux-gnu-ubuntu-18.04.tar.xz
           tar -xf clang+llvm-18.1.8-x86_64-linux-gnu-ubuntu-18.04.tar.xz -C clang
 
-      - name: Pull kernel source
-        run: |
-          git clone https://github.com/knbnaz/kernel_lge_sm8150 -b erofs kernel-source
-
       - name: Save Android toolchain
         if: steps.cache-build-env.outputs.cache-hit != 'true'
         uses: actions/cache/save@v3
@@ -51,6 +47,16 @@ jobs:
           path: |
             clang
           key: ${{ runner.os }}-android-toolchain
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: kernel
+
+      - name: Pull kernel source
+        if: steps.cache-build-env.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/knbnaz/kernel_lge_sm8150 -b erofs kernel-source
 
       - name: Build kernel
         run: |
