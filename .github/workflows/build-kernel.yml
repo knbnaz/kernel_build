@@ -15,6 +15,24 @@ jobs:
           echo "ANYKERNEL_SOURCE=$(cat config.env | grep -w "ANYKERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "ANYKERNEL_SOURCE_BRANCH=$(cat config.env | grep -w "ANYKERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
 
+      - name: Setup build env
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache curl flex \
+          g++-multilib gcc-multilib git gnupg gperf imagemagick lib32ncurses5-dev \
+          lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev \
+          libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc \
+          zip zlib1g-dev python3 python3-pip python3-pexpect python3-setuptools python3-serial python3-yaml \
+          python-is-python3 git zstd lld
+          
+      - name: Cache build env
+        id: cache-build-env
+        uses: actions/cache@v3
+        with:
+          path: |
+            clang
+          key: ${{ runner.os }}-android-toolchain
+          
       - name: Pull toolchain
         run: |
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 aarch64-linux-android-4.9
@@ -24,6 +42,14 @@ jobs:
       - name: Pull kernel source
         run: |
           git clone https://github.com/knbnaz/kernel_lge_sm8150 -b main kernel-source
+
+      - name: Save Android toolchain
+        if: steps.cache-build-env.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            clang
+          key: ${{ runner.os }}-android-toolchain
 
       - name: Build kernel
         run: |
