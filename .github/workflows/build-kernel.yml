@@ -57,6 +57,7 @@ jobs:
       - name: Pull kernel source
         if: steps.cache-build-env.outputs.cache-hit != 'true'
         run: |
+          mkdir kernel-source
           git clone https://github.com/knbnaz/kernel_lge_sm8150 -b erofs kernel-source
 
       - name: Build kernel
